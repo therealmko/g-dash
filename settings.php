@@ -78,6 +78,9 @@
 	$CONFIG['pushbulletwitness']['active'] = $_POST['pushbulletwitness'];
 	if($CONFIG['pushbulletwitness']['lastmes']=="") { $CONFIG['pushbulletwitness']['lastmes'] = ""; }
 	if($CONFIG['pushbulletwitness']['lastblock']=="") { $CONFIG['pushbulletwitness']['lastblock'] = ""; }
+	$CONFIG['pushbullettemperature']['active'] = $_POST['pushbullettemperature'];
+	if($CONFIG['pushbullettemperature']['lastmes']=="") { $CONFIG['pushbullettemperature']['lastmes'] = ""; }
+	if($CONFIG['pushbullettemperature']['lasttemperature']=="") { $CONFIG['pushbullettemperature']['lasttemperature'] = ""; }
 	
 	$CONFIG['nlgprovider'] = $_POST['nlgprice'];
 	
@@ -143,11 +146,8 @@
 	//Check the crontab for pushbullet notifications
 	$pushbulletcron = exec("crontab -l | grep -q 'cronnotifications.php' && echo '1' || echo '0'");
 	
-	//Random check sleep
-	$randompbchecktime = rand(1,60);
-	
 	//Every two minutes
-	$pushbulletcronentry = "*/2 * * * * sleep ".$randompbchecktime."; php ".__DIR__."/lib/push/cronnotifications.php >/dev/null 2>&1";
+	$pushbulletcronentry = "*/2 * * * * php ".__DIR__."/lib/push/cronnotifications.php >/dev/null 2>&1";
 	$currentcron = explode(PHP_EOL, shell_exec('crontab -l'));
 	
 	if($pushbulletcron=="0" && $CONFIG['pushbullet']!="") {
@@ -442,6 +442,14 @@
 			      <input type="checkbox" id="pushbulletwitness" name="pushbulletwitness" aria-describedby="pushbulletwitnesshelp" value="1" <?php if($CONFIG['pushbulletwitness']['active']=="1") { echo "checked='checked'"; } ?>>Send a notification on witness activity.</label><br>
 			      <small id="pushbullettxhelp" class="form-text text-muted">A notification will be sent to pushbullet when there was any activity with your witness account.<br>
 			      																Last message pushed: <?php echo $CONFIG['pushbulletwitness']['lastmes']; ?>
+			      </small>
+			  </div>
+			  
+			  <div class="checkbox">
+			      <label>
+			      <input type="checkbox" id="pushbullettemperature" name="pushbullettemperature" aria-describedby="pushbullettemperaturehelp" value="1" <?php if($CONFIG['pushbullettemperature']['active']=="1") { echo "checked='checked'"; } ?>>Send a notification on system overheating.</label><br>
+			      <small id="pushbullettxhelp" class="form-text text-muted">A notification will be sent to pushbullet when the temperatre of your device exceeds 75 degrees.<br>
+			      																Last message pushed: <?php echo $CONFIG['pushbullettemperature']['lastmes']; ?>
 			      </small>
 			  </div>
 		    </div>

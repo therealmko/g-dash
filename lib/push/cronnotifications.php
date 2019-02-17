@@ -215,5 +215,34 @@ if (php_sapi_name() == "cli") {
 			file_put_contents(__DIR__.'/../../config/config.php', '<?php $CONFIG = '.var_export($CONFIG, true).'; ?>');
 		}
 	}
+
+	//Check if there is a issue with overheating of the device
+	if($CONFIG['pushbullettemperature']['active']=="1") {
+		
+		//Get the info (last message and current message)
+		$lastmessage = $CONFIG['pushbullettemperature']['lastmes'];
+		$currentmessage = "";
+		$lasttemperature = $CONFIG['pushbullettemperature']['lasttemperature'];
+		
+		//What is the current temperature of the device running G-DASH
+		$currenttemperature = GetLinuxTemp();
+		
+		//Set the message
+		$currentmessage = "Your Gulden G-Dash device is overheating. Current temperature is ".$currenttemperature;
+
+		//Check the last message that was pushed to prevent multiple pushes of the same message
+		if($currenttemperature > 75 && $lasttemperature != $currenttemperature && $lastmessage != $currentmessage) {
+			
+			//The message is different, send a push notification
+			$sendpush = shell_exec("curl --header 'Authorization: Bearer ".$CONFIG['pushbullet']."' -X POST https://api.pushbullet.com/v2/pushes --header 'Content-Type: application/json' --data-binary '{\"type\": \"note\", \"title\": \"G-DASH High Temperature\", \"body\": \"".$currentmessage."\"}'");
+			
+			//Set the current message as the last message in the config file
+			$CONFIG['pushbullettemperature']['lastmes'] = $currentmessage;
+			$CONFIG['pushbullettemperature']['lasttemperature'] = $currenttemperature;
+			
+			//Update the config file
+			file_put_contents(__DIR__.'/../../config/config.php', '<?php $CONFIG = '.var_export($CONFIG, true).'; ?>');
+		}
+	}
 }
 ?>
